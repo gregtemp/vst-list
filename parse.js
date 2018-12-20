@@ -37,7 +37,7 @@ urlList.forEach((url, i) => {
 				constructURLs(dom);
 			}
 		});
-	}, 1000 * i);
+	}, 5000 * i);
 });
 
 function constructURLs(dom){
@@ -62,6 +62,10 @@ function constructURLs(dom){
 		// handle case where 2 disallowed characters occur back to back
 		productName = findAndReplace(productName, "--", "-");
 		authorName = findAndReplace(authorName, "--", "-");
+
+		// handle possesive s's 
+		productName = findAndReplace(productName, "'", "");
+		authorName = findAndReplace(authorName, "'", "");
 
 		// concatenate (hopefully) valid URLs
 		let url = `https://www.kvraudio.com/product/${productName}${authorName}`;
