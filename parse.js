@@ -21,14 +21,14 @@ urlList.forEach((url, i) => {
 		request(url, (error, response, body) => {
 			if (error){
 				// print error in red if request fails outright
-				console.log(`${error} on ${url}`.red);
+				console.log(`received ${error} on ${url}`.red);
 			} else {
 				let status = response.statusCode;
 				// print green if OK, red if any sort of error
 				if (status >= 200 && status < 300){
-					console.log(`${response.statusCode} on ${url}`.green);
+					console.log(`received status code ${response.statusCode} on ${url}`.green);
 				} else {
-					console.log(`${response.statusCode} on ${url}`.red);
+					console.log(`received status code ${response.statusCode} on ${url}`.red);
 				}
 
 				// convert raw body text to dom
