@@ -1,5 +1,8 @@
 const request = require('request');
 const colors = require('colors');
+const jsdom = require("jsdom");
+const {JSDOM} = jsdom;
+let dom;
 
 // max no. of items to lookup (each page has 20 results)
 // current max is set really low to not be spammy
@@ -18,30 +21,28 @@ urlList.forEach((url, i) => {
 		request(url, (error, response, body) => {
 			if (error){
 				// print error in red if request fails outright
-				console.log(`${error} on ${url}`.red);
+				console.log(`received ${error} on ${url}`.red);
 			} else {
 				let status = response.statusCode;
 				// print green if OK, red if any sort of error
 				if (status >= 200 && status < 300){
-					console.log(`${response.statusCode} on ${url}`.green);
+					console.log(`received status code ${response.statusCode} on ${url}`.green);
 				} else {
-					console.log(`${response.statusCode} on ${url}`.red);
+					console.log(`received status code ${response.statusCode} on ${url}`.red);
 				}
 
-				// this doesn't work yet but the idea is to feed the body of each listing page
-				// into a function which loops through the target html elements and constructs valid URLs 
-				// which would then be saved into a JSON file or DB
-				// constructURLs(body);
+				// convert raw body text to dom
+				dom = new JSDOM(body);
+				// pass dom to constructURLs() to parse 
+				constructURLs(dom);
 			}
 		});
-	}, 1000 * i);
+	}, 5000 * i);
 });
 
-
-// @TODO fix this with cheerio somehow. body right now is just block of text. need to parse as if it were real html in browser.
-function constructURLs(body){
+function constructURLs(dom){
 	// get node list containing all product boxes on each page
-	let productBoxes = document.querySelectorAll(".kvrpboximg");
+	let productBoxes = dom.window.document.querySelectorAll(".kvrpboximg");
 	let disallowedCharacters = ["{", "}", "|", "\\", "^", "~", "[", "]", "`", " ", ":", "."];
 	let productUrlList = [];
 
@@ -49,7 +50,7 @@ function constructURLs(body){
 		// get the child nodes of each product box
 		let children = product.nextElementSibling.childNodes;
 		// break off strings from product's child nodes to get names
-		let productName = children[0].innerText;
+		let productName = children[0].textContent;
 		let authorName = children[1].childNodes[2].data;
 
 		// replace disallowed characters with hyphens
@@ -62,11 +63,15 @@ function constructURLs(body){
 		productName = findAndReplace(productName, "--", "-");
 		authorName = findAndReplace(authorName, "--", "-");
 
+		// handle possesive s's 
+		productName = findAndReplace(productName, "'", "");
+		authorName = findAndReplace(authorName, "'", "");
+
 		// concatenate (hopefully) valid URLs
 		let url = `https://www.kvraudio.com/product/${productName}${authorName}`;
 		productUrlList.push(url);
-		console.log(productUrlList);
 	});
+	console.log(productUrlList);
 }
 
 function findAndReplace(string, target, replacement){
