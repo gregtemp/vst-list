@@ -66,8 +66,8 @@ function constructURLs(dom){
 		// concatenate (hopefully) valid URLs
 		let url = `https://www.kvraudio.com/product/${productName}${authorName}`;
 		productUrlList.push(url);
-		console.log(productUrlList);
 	});
+	console.log(productUrlList);
 }
 
 function findAndReplace(string, target, replacement){
